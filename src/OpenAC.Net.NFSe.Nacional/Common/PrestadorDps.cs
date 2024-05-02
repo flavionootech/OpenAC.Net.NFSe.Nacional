@@ -37,7 +37,7 @@ public sealed class PrestadorDps : InfoPessoaNFSe
 {
     #region Properties
 
-    [DFeElement("regTrib", Ocorrencia = Ocorrencia.Obrigatoria)]
+    [DFeElement("regTrib", Ocorrencia = Ocorrencia.Obrigatoria, Ordem = int.MaxValue)]
     public RegimeTributario Regime { get; set; } = new();
 
     #endregion Properties

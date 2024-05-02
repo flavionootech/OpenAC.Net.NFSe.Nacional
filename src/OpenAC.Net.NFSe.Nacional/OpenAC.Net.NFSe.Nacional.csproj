@@ -38,7 +38,6 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="OpenAC.Net.Core" Version="1.6.0-beta.1" />
-      <PackageReference Include="OpenAC.Net.DFe.Core" Version="1.6.0-beta.1" />
       <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
     </ItemGroup>
 
@@ -59,6 +58,12 @@
             <Pack>True</Pack>
             <PackagePath>content\Schemas\</PackagePath>
         </None>
+    </ItemGroup>          
+
+    <ItemGroup>
+      <Reference Include="OpenAC.Net.DFe.Core">
+        <HintPath>..\..\..\OpenAC.Net.DFe.Core\src\OpenAC.Net.DFe.Core\bin\Debug\netstandard2.0\OpenAC.Net.DFe.Core.dll</HintPath>
+      </Reference>
     </ItemGroup>
     
 </Project>

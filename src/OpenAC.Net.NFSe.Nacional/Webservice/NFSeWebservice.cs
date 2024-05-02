@@ -29,6 +29,10 @@
 // <summary></summary>
 // ***********************************************************************
 
+using OpenAC.Net.Core.Logging;
+using OpenAC.Net.DFe.Core;
+using OpenAC.Net.DFe.Core.Common;
+using OpenAC.Net.NFSe.Nacional.Common;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -38,10 +42,6 @@ using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Schema;
-using OpenAC.Net.Core.Logging;
-using OpenAC.Net.DFe.Core;
-using OpenAC.Net.DFe.Core.Common;
-using OpenAC.Net.NFSe.Nacional.Common;
 
 namespace OpenAC.Net.NFSe.Nacional.Webservice;
 
@@ -55,9 +55,9 @@ public sealed class NFSeWebservice : IOpenLog
         Rps,
         NFSe
     }
-    
+
     #endregion Internal Types
-    
+
     #region Fields
 
     private readonly ConfiguracaoNFSe configuracao;
@@ -75,50 +75,63 @@ public sealed class NFSeWebservice : IOpenLog
 
     #region MyRegion
 
+    public async Task<byte[]> GetDanfseAsync(string chave)
+    {
+        var handler = new HttpClientHandler();
+
+        handler.SslProtocols = (SslProtocols)configuracao.WebServices.Protocolos;
+        handler.ClientCertificates.Add(configuracao.Certificados.ObterCertificado());
+        var client = new HttpClient(handler);
+
+        var url = NFSeServiceManager.Instance[DFeTipoEmissao.Normal][configuracao.WebServices.Ambiente, DFeSiglaUF.AN][TipoServico.Sefin];
+
+        return await client.GetByteArrayAsync($"{url}/danfse/{chave}");
+    }
+
     public async Task<NFSeResponse<EventoEnvioResposta>> EnviarAsync(PedidoRegistroEvento evento)
     {
         evento.Assinar(configuracao);
-        
+
         ValidarSchema(SchemaNFSe.Evento, evento.Xml);
-        
+
         var documento = evento.Informacoes.CPFAutor ?? evento.Informacoes.CNPJAutor;
-        
-        GravarDpsEmDisco(evento.Xml, $"{evento.Informacoes.NumeroPedido:000000}_evento.xml", 
+
+        GravarDpsEmDisco(evento.Xml, $"{evento.Informacoes.NumeroPedido:000000}_evento.xml",
             documento, evento.Informacoes.DhEvento.DateTime);
-        
+
         var envio = new EventoEnvio()
         {
             XmlEvento = evento.Xml
         };
-        
+
         var content = JsonContent.Create(envio);
         var strEnvio = await content.ReadAsStringAsync();
-        
+
         this.Log().Debug($"Webservice: [Evento][Envio] - {strEnvio}");
-        
+
         GravarArquivoEmDisco(strEnvio, $"Evento-{evento.Informacoes.NumeroPedido:000000}-env.json", documento);
-        
+
         var url = NFSeServiceManager.Instance[DFeTipoEmissao.Normal][configuracao.WebServices.Ambiente, DFeSiglaUF.AN][TipoServico.Sefin];
         var httpResponse = await SendAsync(content, HttpMethod.Post, url + $"/nfse/{evento.Informacoes.ChNFSe}/eventos");
-        
+
         var strResponse = await httpResponse.Content.ReadAsStringAsync();
-        
+
         this.Log().Debug($"Webservice: [Evento][Resposta] - {strResponse}");
-        
+
         GravarArquivoEmDisco(strResponse, $"Evento-{evento.Informacoes.NumeroPedido:000000}-resp.json", documento);
 
         return new NFSeResponse<EventoEnvioResposta>(evento.Xml, strEnvio, strResponse, httpResponse.IsSuccessStatusCode);
     }
-    
+
     public async Task<NFSeResponse<DpsEnvioResposta>> EnviarAsync(Dps dps)
     {
         dps.Assinar(configuracao);
-        
+
         ValidarSchema(SchemaNFSe.DPS, dps.Xml);
-        
+
         var documento = dps.Informacoes.Prestador.CPF ?? dps.Informacoes.Prestador.CNPJ;
-        
-        GravarDpsEmDisco(dps.Xml, $"{dps.Informacoes.NumeroDps:000000}_dps.xml", 
+
+        GravarDpsEmDisco(dps.Xml, $"{dps.Informacoes.NumeroDps:000000}_dps.xml",
             documento, dps.Informacoes.DhEmissao.DateTime);
 
         var envio = new DpsEnvio
@@ -128,19 +141,21 @@ public sealed class NFSeWebservice : IOpenLog
 
         var content = JsonContent.Create(envio);
         var strEnvio = await content.ReadAsStringAsync();
-        
+
         this.Log().Debug($"Webservice: [Enviar][Envio] - {strEnvio}");
-        
+
         GravarArquivoEmDisco(strEnvio, $"Enviar-{dps.Informacoes.NumeroDps:000000}-env.json", documento);
-        
+
         var url = NFSeServiceManager.Instance[DFeTipoEmissao.Normal][configuracao.WebServices.Ambiente, DFeSiglaUF.AN][TipoServico.Sefin];
         var httpResponse = await SendAsync(content, HttpMethod.Post, url + "/nfse");
-        
+
         var strResponse = await httpResponse.Content.ReadAsStringAsync();
-        
+
         this.Log().Debug($"Webservice: [Enviar][Resposta] - {strResponse}");
-        
+
         GravarArquivoEmDisco(strResponse, $"Enviar-{dps.Informacoes.NumeroDps:000000}-resp.json", documento);
+
+        System.IO.File.WriteAllText("C:\\tmp\\dps\\retorno.txt", Convert.ToString((int)httpResponse.StatusCode));
 
         return new NFSeResponse<DpsEnvioResposta>(dps.Xml, strEnvio, strResponse, httpResponse.IsSuccessStatusCode);
 
@@ -162,11 +177,12 @@ public sealed class NFSeWebservice : IOpenLog
 
         request.Headers.UserAgent.Add(productValue);
         request.Headers.UserAgent.Add(commentValue);
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         request.Content = content;
-        
+
         return client.SendAsync(request);
     }
-    
+
     /// <summary>
     /// Valida o XML de acordo com o schema.
     /// </summary>
@@ -178,10 +194,10 @@ public sealed class NFSeWebservice : IOpenLog
         var schemaFile = configuracao.Arquivos.GetSchema(schema);
         if (!File.Exists(schemaFile))
             throw new XmlSchemaException("Nao encontrou o arquivo schema do xml => " + schemaFile);
-            
+
         if (XmlSchemaValidation.ValidarXml(xml, schemaFile, out var errosSchema, out _)) return;
 
-        throw new XmlSchemaValidationException("Erros gerado ao validar o schema do xml" + Environment.NewLine + 
+        throw new XmlSchemaValidationException("Erros gerado ao validar o schema do xml" + Environment.NewLine +
                                                string.Join(Environment.NewLine, errosSchema));
     }
 
@@ -225,7 +241,7 @@ public sealed class NFSeWebservice : IOpenLog
 
         GravarArquivoEmDisco(TipoArquivo.Webservice, conteudoArquivo, nomeArquivo, documento);
     }
-    
+
     private void GravarArquivoEmDisco(TipoArquivo tipo, string conteudoArquivo, string nomeArquivo, string? documento, DateTime? data = null)
     {
         nomeArquivo = tipo switch

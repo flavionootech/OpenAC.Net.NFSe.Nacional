@@ -68,7 +68,9 @@ public class XmlGzipJsonConverter : JsonConverter<string>
         using var memoryStream = new MemoryStream();
         using var gZipStream = new GZipStream(memoryStream, CompressionMode.Compress);
         gZipStream.Write(dados, 0, dados.Length);
-        
-        writer.WriteBase64StringValue(gZipStream.ToByteArray());
+        gZipStream.Close(); // Importante fechar o stream de compressão
+
+        var base64String = Convert.ToBase64String(memoryStream.ToArray());
+        writer.WriteStringValue(base64String);
     }
 }

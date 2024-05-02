@@ -39,6 +39,6 @@ public sealed class LocalidadeNFSe
     [DFeElement(TipoCampo.StrNumber, "cLocPrestacao", Min = 7, Max = 7, Ocorrencia = Ocorrencia.NaoObrigatoria)]
     public string? CodMunicipioPrestacao { get; set; }
     
-    [DFeElement(TipoCampo.StrNumber, "cPaisPrestacao", Min = 2, Max = 2, Ocorrencia = Ocorrencia.NaoObrigatoria)]
+    [DFeElement(TipoCampo.Str, "cPaisPrestacao", Min = 2, Max = 2, Ocorrencia = Ocorrencia.NaoObrigatoria)]
     public string? CodPaisPrestacao { get; set; }
 }

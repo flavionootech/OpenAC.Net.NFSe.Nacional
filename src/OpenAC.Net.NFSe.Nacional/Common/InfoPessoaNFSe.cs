@@ -59,7 +59,7 @@ public class InfoPessoaNFSe
     [DFeElement(TipoCampo.Str, "xNome", Min = 1, Max = 300, Ocorrencia = Ocorrencia.NaoObrigatoria)]
     public string? Nome { get; set; }
 
-    [DFeElement("end", Ocorrencia = Ocorrencia.Obrigatoria)]
+    [DFeElement("end", Ocorrencia = Ocorrencia.NaoObrigatoria)]
     public EnderecoNFSe Endereco { get; set; } = new();
     
     [DFeElement(TipoCampo.StrNumber, "fone", Min = 6, Max = 20, Ocorrencia = Ocorrencia.NaoObrigatoria)]

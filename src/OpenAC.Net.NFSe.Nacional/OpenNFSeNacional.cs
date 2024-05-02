@@ -38,9 +38,9 @@ namespace OpenAC.Net.NFSe.Nacional;
 public sealed class OpenNFSeNacional
 {
     #region Fields
-    
+
     private readonly NFSeWebservice webservice;
-    
+
     #endregion Fields
 
     #region Constructors
@@ -51,7 +51,7 @@ public sealed class OpenNFSeNacional
     }
 
     #endregion Constructors
-    
+
     #region Properties
 
     public ConfiguracaoNFSe Configuracoes { get; } = new();
@@ -60,8 +60,10 @@ public sealed class OpenNFSeNacional
 
     #region Methods
 
+    public Task<byte[]> GetDanfseAsync(string chave) => webservice.GetDanfseAsync(chave);
+
     public Task<NFSeResponse<DpsEnvioResposta>> EnviarAsync(Dps dps) => webservice.EnviarAsync(dps);
-    
+
     public Task<NFSeResponse<EventoEnvioResposta>> EnviarAsync(PedidoRegistroEvento evento) => webservice.EnviarAsync(evento);
 
     #endregion

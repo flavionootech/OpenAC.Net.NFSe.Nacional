@@ -36,18 +36,18 @@ namespace OpenAC.Net.NFSe.Nacional.Webservice;
 
 public sealed class MensagemProcessamento
 {
-    [JsonPropertyName("mensagem")]
+    [JsonPropertyName("Mensagem")]
     public string Mensagem { get; set; } = string.Empty;
     
-    [JsonPropertyName("codigo")]
+    [JsonPropertyName("Codigo")]
     public string Codigo { get; set; } = string.Empty;
     
-    [JsonPropertyName("descricao")]
+    [JsonPropertyName("Descricao")]
     public string Descricao { get; set; } = string.Empty;
     
-    [JsonPropertyName("complemento")]
+    [JsonPropertyName("Complemento")]
     public string Complemento { get; set; } = string.Empty;
     
-    [JsonPropertyName("parametros")] 
+    [JsonPropertyName("Parametros")] 
     public List<string> Parametros { get; set; } = new();
 }

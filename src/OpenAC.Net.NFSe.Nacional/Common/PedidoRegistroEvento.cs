@@ -59,7 +59,7 @@ public sealed class PedidoRegistroEvento : DFeSignDocument<PedidoRegistroEvento>
         if (configuracao.Geral.RetirarAcentos)
             options |= DFeSaveOptions.RemoveAccents;
         
-        AssinarDocumento(configuracao.Certificados.ObterCertificado(), options, false, SignDigest.SHA1);
+        AssinarDocumento(configuracao.Certificados.ObterCertificado(), options, false, SignDigest.SHA1, "http://www.w3.org/TR/2001/REC-xml-c14n-20010315");
     }
 
     #endregion Methods
