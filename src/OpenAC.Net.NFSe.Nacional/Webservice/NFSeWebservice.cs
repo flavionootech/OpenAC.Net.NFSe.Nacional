@@ -155,8 +155,6 @@ public sealed class NFSeWebservice : IOpenLog
 
         GravarArquivoEmDisco(strResponse, $"Enviar-{dps.Informacoes.NumeroDps:000000}-resp.json", documento);
 
-        System.IO.File.WriteAllText("C:\\tmp\\dps\\retorno.txt", Convert.ToString((int)httpResponse.StatusCode));
-
         return new NFSeResponse<DpsEnvioResposta>(dps.Xml, strEnvio, strResponse, httpResponse.IsSuccessStatusCode);
 
     }

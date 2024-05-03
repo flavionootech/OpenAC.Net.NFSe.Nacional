@@ -30,6 +30,7 @@
 // ***********************************************************************
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using OpenAC.Net.DFe.Core.Common;
 
@@ -50,4 +51,7 @@ public sealed class EventoEnvioResposta
     [JsonPropertyName("eventoXmlGZipB64")]
     [JsonConverter(typeof(XmlGzipJsonConverter))]
     public string XmlEvento { get; set; } = string.Empty;
+
+    [JsonPropertyName("erro")]
+    public List<MensagemProcessamentoEvento> Erros { get; set; } = new();
 }
